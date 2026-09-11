@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noto Geostat Tiles Preview</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  html, body, #map { height: 100%; margin: 0; }
+  .legend-box {
+    position: absolute; bottom: 20px; right: 10px; z-index: 1000;
+    background: rgba(255,255,255,0.9); padding: 6px 10px; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4); font-family: sans-serif; font-size: 13px;
+  }
+  .legend-box img { display: block; max-height: 260px; }
+  .layer-switch {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4); font-family: sans-serif; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="layer-switch">
+  <label><input type="radio" name="layer" value="phi_deg" checked> Φ (phi_deg)</label><br>
+  <label><input type="radio" name="layer" value="mu_deg"> μ (mu_deg)</label>
+</div>
+<div class="legend-box"><img id="legend-img" src="legend/phi_deg_legend.png" alt="legend"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  const map = L.map('map', { zoomControl: true }).setView([37.35, 136.90], 11);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const layers = {
+    phi_deg: L.tileLayer('tiles/phi_deg/{z}/{x}/{y}.png', {
+      minZoom: 8, maxZoom: 15, maxNativeZoom: 15, tms: false,
+      attribution: 'Noto geostat (Φ)'
+    }),
+    mu_deg: L.tileLayer('tiles/mu_deg/{z}/{x}/{y}.png', {
+      minZoom: 8, maxZoom: 15, maxNativeZoom: 15, tms: false,
+      attribution: 'Noto geostat (μ)'
+    })
+  };
+
+  let current = 'phi_deg';
+  layers[current].addTo(map);
+
+  document.querySelectorAll('input[name=layer]').forEach(function (radio) {
+    radio.addEventListener('change', function (e) {
+      map.removeLayer(layers[current]);
+      current = e.target.value;
+      layers[current].addTo(map);
+      document.getElementById('legend-img').src = 'legend/' + current + '_legend.png';
+    });
+  });
+</script>
+</body>
+</html>
